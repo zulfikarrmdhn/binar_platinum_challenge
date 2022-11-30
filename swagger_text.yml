@@ -1,6 +1,6 @@
 swagger: '2.0'
 tags:
-  - name: Test API Swagger
+  - name: Text API Swagger
 get:
   description: None
 responses:
