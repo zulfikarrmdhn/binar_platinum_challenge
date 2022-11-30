@@ -1,0 +1,11 @@
+flask
+flasgger
+unidecode
+regex
+pandas
+sqlite3
+seaborn
+matplotlib
+flashtext
+transformers
+tensorflow
