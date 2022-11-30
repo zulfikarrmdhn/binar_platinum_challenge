@@ -51,10 +51,10 @@ def ann_text():
 @app.route("/ann_file/v1", methods=['POST'])
 def ann_file():
     file = request.files["file"]
-    df = pd.read_csv(file,encoding='latin')
+    df = pd.read_csv(file,encoding='latin-1')
     #print(df.head(20))
     current_datetime = str(datetime.now())
-    df.to_sql("uploadtable"+current_datetime, conn)
+    df.to_sql("ann_file"+current_datetime, conn)
     #return df.to_html()
     return jsonify({"say":"success"})
     
@@ -68,10 +68,10 @@ def lstm_text():
 @app.route("/lstm_file/v1", methods=['POST'])
 def lstm_file():
     file = request.files["file"]
-    df = pd.read_csv(file,encoding='latin')
+    df = pd.read_csv(file,encoding='latin-1')
     #print(df.head(20))
     current_datetime = str(datetime.now())
-    df.to_sql("uploadtable"+current_datetime, conn)
+    df.to_sql("lstm_file"+current_datetime, conn)
     #return df.to_html()
     return jsonify({"say":"success"})
     

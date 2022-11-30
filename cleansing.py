@@ -27,18 +27,10 @@ alay_dict_map = dict(zip(alay_dict['original'], alay_dict['replacement']))
 def alay_word(s):
     return ' '.join([alay_dict_map[word] if word in alay_dict_map else word for word in s.split(' ')])
 
-abusive = pd.read_csv('Data/abusive.csv', encoding='latin-1')
-abusive_map = abusive['ABUSIVE'].str.lower().tolist()
-
-def abusive_word (s):
-    word_list = s.split()
-    return ' '.join([s for s in word_list if s not in abusive_map ])
-
 def cleansing(s):
     s = remove_ascii2(s)
     s = remove_n(s)
     s = remove_punct(s)
     s = remove_whitespace(s)
     s = alay_word(s)
-    s = abusive_word(s)
     return s
