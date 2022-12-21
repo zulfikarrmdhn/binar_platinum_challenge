@@ -1,6 +1,4 @@
 flask
-flasgger
-unidecode
 regex
 pandas
 sqlite3
@@ -9,3 +7,4 @@ matplotlib
 flashtext
 transformers
 tensorflow
+keras
