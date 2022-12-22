@@ -8,3 +8,4 @@ flashtext
 transformers
 tensorflow
 keras
+streamlit

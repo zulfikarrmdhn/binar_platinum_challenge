@@ -10,11 +10,11 @@ class PredictSentiment():
         self.lstm_model = load_model(os.path.join("models","lstm_model.h5"))       
         pass
 
-    def ann_predict(self,get_bow) -> np.int64:
-        result = self.ann_model.predict(get_bow)
+    def ann_predict(self,bow) -> np.int64:
+        result = self.ann_model.predict(bow)[0]
         return result
 
-    def lstm_predict(self,get_token) -> np.int64:
-        get_token = np.reshape(get_token, (1,128))
-        result = self.lstm_model.predict(get_token,batch_size=10,verbose=1)
+    def lstm_predict(self,token) -> np.int64:
+        token = np.reshape(token, (1,128))
+        result = self.lstm_model.predict(token,batch_size=1,verbose=0)[0]
         return np.argmax(result)
