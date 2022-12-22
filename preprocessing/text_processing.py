@@ -22,59 +22,59 @@ class TextProcessing():
             self.tokenizer = pickle.load(f)
         pass
 
-    def special(s):
-        s = re.sub(r'\W', ' ',str(s))
-        return s
+    def special(self,text):
+        return re.sub(r'\W', ' ',str(text))
 
-    def single(s):
-        s = re.sub(r'\s+[a-zA-Z]\s+', ' ', s)
-        return s
+    def single(self,text):
+        return re.sub(r'\s+[a-zA-Z]\s+', ' ', text)
 
-    def singlestart(s):
-        s = re.sub(r'\^[a-zA-Z]\s+', ' ', s)
-        return s
+    def singlestart(self,text):
+        return re.sub(r'\^[a-zA-Z]\s+', ' ', text)
 
-    def lowercase(s):
-        return s.lower()
+    def lowercase(self,text):
+        return text.lower()
 
-    def mulspace(s):
-        s = re.sub(r'\s+', ' ', s)
-        return s
+    def mulspace(self,text):
+        return re.sub(r'\s+', ' ', text)
 
-    def rt(s):
-        s = re.sub(r'rt @\w+: ', ' ', s)
-        return s
+    def rt(self,text):
+        return re.sub(r'rt @\w+: ', ' ', text)
 
-    def prefixedb(s):
-        s = re.sub(r'^b\s+', '', s)
-        return s
+    def prefixedb(self,text):
+        return re.sub(r'^b\s+', '', text)
 
-    def misc(s):
-        s = re.sub(r'((www\.[^\s]+)|(https?://[^\s]+)|(http?://[^\s]+))|([#@]\S+)|user|\n|\t', ' ', s)
-        return s
+    def misc(self,text):
+        return re.sub(r'((www\.[^\s]+)|(https?://[^\s]+)|(http?://[^\s]+))|([#@]\S+)|user|\n|\t', ' ', text)
 
-    def replace_alay(s):
-        return keyword_processor.replace_keywords(s)
+    def replace_alay(self,text):
+        return keyword_processor.replace_keywords(text)
+  
+    def get_bow(self,text):
+        text = self.special(text)
+        text = self.single(text)
+        text = self.singlestart(text)
+        text = self.lowercase(text)
+        text = self.mulspace(text)
+        text = self.rt(text)
+        text = self.prefixedb(text)
+        text = self.misc(text)
+        text = self.replace_alay(text)
+        clean_text = text
+        df_ann = pd.DataFrame([text],columns=['sent_text'])
+        bow = self.count_vect.transform(df_ann['sent_text'])
+        bow = self.tf_transformer.transform(bow)
+        return clean_text,bow
 
-    def cleansing(self,s):
-        s = self.special(s)
-        s = self.single(s)
-        s = self.singlestart(s)
-        s = self.lowercase(s)
-        s = self.mulspace(s)
-        s = self.rt(s)
-        s = self.prefixedb(s)
-        s = self.misc(s)
-        s = self.replace_alay(s)
-        clean_text = s
-        return clean_text
-    
-    def get_bow(self,s):
-        get_bow = self.count_vect.transform(s)
-        get_bow = self.tf_transformer.transform(get_bow)
-        return get_bow
-
-    def get_token(self,s):
-        get_token = self.tokenizer.texts_to_sequences([s])
-        get_token = pad_sequences(get_token, maxlen=128)
-        return get_token
+    def get_token(self,text):
+        text = self.special(text)
+        text = self.single(text)
+        text = self.singlestart(text)
+        text = self.lowercase(text)
+        text = self.mulspace(text)
+        text = self.rt(text)
+        text = self.prefixedb(text)
+        text = self.misc(text)
+        text = self.replace_alay(text)
+        clean_text = text
+        token = self.tokenizer.texts_to_sequences([text])
+        return clean_text,pad_sequences(token, maxlen=128)
