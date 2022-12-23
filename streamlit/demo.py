@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from io import StringIO
 
 def call_api(text, path):
     url = f"http://127.0.0.1:5555/{path}/v1"
@@ -10,16 +11,19 @@ def call_api(text, path):
 
     response = requests.post(url,json=data_payload)
     result = response.json()
-    print(type(data_payload))
     return result
 
 def upload_csv(uploaded_file, path):
     url = f"http://127.0.0.1:5555/{path}/v1"
-    response = requests.post(url,files={'data.csv': uploaded_file})
+    files = {
+        'data.csv': uploaded_file
+    }
+    response = requests.post(url,files=files)
     result = response.json()
     return result
 
-st.title('Sentiment Analysis in Bahasa Indonesia (Platinum Challenge Data Science Binar Academy)')
+st.title('Sentiment Analysis in Bahasa Indonesia')
+st.subheader('Platinum Challenge Data Science Binar Academy')
 
 option = st.selectbox(
     'Pilih model yang akan akan Anda gunakan.',
@@ -38,11 +42,15 @@ if text:
 
 uploaded_file = st.file_uploader("Choose a CSV file")
 
-if uploaded_file:
+if uploaded_file is not None:
     if option == 'ANN':
         path = 'ann_file'
-        result = upload_csv(uploaded_file,path)
+        stringio = StringIO(uploaded_file.getvalue().decode("latin-1"))
+        st.write(stringio.getvalue())
+        result = upload_csv(stringio.getvalue(),path)
     else:
         path = "lstm_file"
-        result = upload_csv(uploaded_file,path)
+        stringio = StringIO(uploaded_file.getvalue().decode("latin-1"))
+        st.write(stringio.getvalue())
+        result = upload_csv(stringio.getvalue(),path)
     st.write("your result: ", result)

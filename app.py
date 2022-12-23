@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flasgger import Swagger, LazyString, LazyJSONEncoder, swag_from
 from preprocessing.text_processing import TextProcessing
 from inference.predict import PredictSentiment
 import pandas as pd
@@ -7,6 +8,34 @@ import sqlite3
 TP = TextProcessing()
 predict_model = PredictSentiment()
 app = Flask(__name__)
+app.json_encoder = LazyJSONEncoder
+
+swagger_template = dict(
+info = {
+    'title': LazyString(lambda: 'Platinum Challenge Data Science Binar Academy'),
+    'version': LazyString(lambda: '1'),
+    'description': LazyString(lambda: 'Sentiment Analysis in Bahasa Indonesia with ANN and LSTM model'),
+    },
+    host = LazyString(lambda: request.host)
+)
+
+swagger_config = {
+    "headers": [],
+    "specs": [
+        {
+            "endpoint": 'docs',
+            "route": '/docs.json',
+            "rule_filter": lambda rule: True,
+            "model_filter": lambda tag: True,
+        }
+    ],
+    "static_url_path": "/flasgger_static",
+    "swagger_ui": True,
+    "specs_route": "/docs/"
+}
+
+swagger = Swagger(app, template=swagger_template,             
+                  config=swagger_config)
 
 def mapping_result(result_prediction):
     if result_prediction == 0:
@@ -16,6 +45,7 @@ def mapping_result(result_prediction):
     else:
         return "negative"
 
+@swag_from("docs/text_input.yml", methods=['POST'])
 @app.route("/ann_text/v1", methods=["POST"])
 def ann_text():
     text = request.get_json()['text']
@@ -35,6 +65,7 @@ def ann_text():
 
     return jsonify({"text":clean_text, "result_sentiment":result_prediction})
 
+@swag_from("docs/text_input.yml", methods=['POST'])
 @app.route("/lstm_text/v1", methods=["POST"])
 def lstm_text():
     text = request.get_json()['text']
@@ -54,10 +85,11 @@ def lstm_text():
 
     return jsonify({"text":clean_text, "result_sentiment":result_prediction})
 
+@swag_from("docs/upload_file.yml", methods=['POST'])
 @app.route("/ann_file/v1", methods=["POST"])
 def ann_file():
     file = request.files["file"]
-    df = (pd.read_csv(file, encoding="latin-1"))
+    df = pd.read_csv(file, encoding="latin-1")
     list_result = []
 
     for i,row in df.iterrows():
@@ -66,9 +98,10 @@ def ann_file():
         result_prediction = mapping_result(result_prediction)
         list_result.append(result_prediction)
 
+    df['clean_tweet'] = clean_text
     df['predict_result'] = list_result
 
-    ann_df = df[['Tweet', 'predict_result']].copy()
+    ann_df = df[['clean_tweet', 'predict_result']].copy()
 
     conn =  sqlite3.connect('platinum_challenge.db', check_same_thread=False)
     ann_df.to_sql("ann_file", con=conn, index=False, if_exists='append')
@@ -76,20 +109,18 @@ def ann_file():
     ann_file.to_csv("ann_file.csv")
     conn.close()
 
-    Tweet = ann_df.Tweet.to_list()
-    Sentiment = ann_df.predict_result.to_list()
-
     return_text = {
-        "Tweet     : ": Tweet,
-        "Sentiment : ": Sentiment
+        "Tweet     : ": clean_text,
+        "Sentiment : ": list_result
     }
 
     return jsonify(return_text)
 
+@swag_from("docs/upload_file.yml", methods=['POST'])
 @app.route("/lstm_file/v1", methods=["POST"])
 def lstm_file():
     file = request.files["file"]
-    df = (pd.read_csv(file, encoding="latin-1"))
+    df = pd.read_csv(file, encoding="utf-8")
     list_result = []
 
     for i,row in df.iterrows():
@@ -98,9 +129,10 @@ def lstm_file():
         result_prediction = mapping_result(result_prediction)
         list_result.append(result_prediction)
 
+    df['clean_tweet'] = clean_text
     df['predict_result'] = list_result
 
-    lstm_df = df[['Tweet', 'predict_result']].copy()
+    lstm_df = df[['clean_tweet', 'predict_result']].copy()
 
     conn =  sqlite3.connect('platinum_challenge.db', check_same_thread=False)
     lstm_df.to_sql("lstm_file", con=conn, index=False, if_exists='append')
@@ -108,12 +140,9 @@ def lstm_file():
     lstm_file.to_csv("lstm_file.csv")
     conn.close()
 
-    Tweet = lstm_df.Tweet.to_list()
-    Sentiment = lstm_df.predict_result.to_list()
-
     return_text = {
-        "Tweet     : ": Tweet,
-        "Sentiment : ": Sentiment
+        "Tweet     : ": clean_text,
+        "Sentiment : ": list_result
     }
 
     return jsonify(return_text)
