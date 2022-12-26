@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 from io import StringIO
+import pandas as pd
 
 def call_api(text, path):
     url = f"http://127.0.0.1:5555/{path}/v1"
@@ -15,10 +16,12 @@ def call_api(text, path):
 
 def upload_csv(uploaded_file, path):
     url = f"http://127.0.0.1:5555/{path}/v1"
-    files = {
-        'data.csv': uploaded_file
-    }
-    response = requests.post(url,files=files)
+    df = pd.read_csv(uploaded_file)
+    data = df.to_json(orient='records')
+    #files = {
+    #    'file': uploaded_file
+    #}
+    response = requests.post(url,data=data)
     result = response.json()
     return result
 

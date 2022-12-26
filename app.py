@@ -58,8 +58,6 @@ def ann_text():
     query_text = "INSERT INTO ann_text (sent_text, predict_result) values(?, ? )"
     val = (clean_text, result_prediction)
     conn.execute(query_text, val)
-    clean_text_file = pd.read_sql_query("SELECT * FROM ann_text", conn)
-    clean_text_file.to_csv("ann_text.csv")
     conn.commit()
     conn.close()
 
@@ -78,8 +76,6 @@ def lstm_text():
     query_text = "INSERT INTO lstm_text (sent_text, predict_result) values(?, ? )"
     val = (clean_text, result_prediction)
     conn.execute(query_text, val)
-    clean_text_file = pd.read_sql_query("SELECT * FROM lstm_text", conn)
-    clean_text_file.to_csv("lstm_text.csv")
     conn.commit()
     conn.close()
 
@@ -105,16 +101,9 @@ def ann_file():
 
     conn =  sqlite3.connect('platinum_challenge.db', check_same_thread=False)
     ann_df.to_sql("ann_file", con=conn, index=False, if_exists='append')
-    ann_file = pd.read_sql_query("SELECT * FROM ann_file", conn)
-    ann_file.to_csv("ann_file.csv")
     conn.close()
 
-    return_text = {
-        "Tweet     : ": clean_text,
-        "Sentiment : ": list_result
-    }
-
-    return jsonify(return_text)
+    return jsonify({"message": "File successfully uploaded"})
 
 @swag_from("docs/upload_file.yml", methods=['POST'])
 @app.route("/lstm_file/v1", methods=["POST"])
@@ -136,16 +125,9 @@ def lstm_file():
 
     conn =  sqlite3.connect('platinum_challenge.db', check_same_thread=False)
     lstm_df.to_sql("lstm_file", con=conn, index=False, if_exists='append')
-    lstm_file = pd.read_sql_query("SELECT * FROM lstm_file", conn)
-    lstm_file.to_csv("lstm_file.csv")
     conn.close()
 
-    return_text = {
-        "Tweet     : ": clean_text,
-        "Sentiment : ": list_result
-    }
-
-    return jsonify(return_text)
+    return jsonify({"message": "File successfully uploaded"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5555, debug=True)
